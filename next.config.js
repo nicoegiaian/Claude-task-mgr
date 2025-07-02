@@ -1,4 +1,3 @@
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   webpack: (config, { dev, isServer }) => {
@@ -10,10 +9,9 @@ const nextConfig = {
       }
       
       // Forzar case sensitivity en webpack
-      config.resolve.plugins = config.resolve.plugins || []
-      config.resolve.plugins.push(
-        new (require('webpack/lib/CaseSensitivePathsPlugin'))()
-      )
+      const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin')
+      config.plugins = config.plugins || []
+      config.plugins.push(new CaseSensitivePathsPlugin())
     }
     
     return config
