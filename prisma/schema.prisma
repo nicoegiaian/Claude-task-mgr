@@ -6,9 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider     = "mysql"
-  url          = env("DATABASE_URL")
-  relationMode = "prisma"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // NextAuth.js Models
@@ -18,18 +18,17 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
-  @@index([userId])
 }
 
 model Session {
@@ -38,8 +37,6 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
 }
 
 model User {
@@ -81,9 +78,6 @@ model Tag {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@index([parentId])
 }
 
 enum TaskStatus {
@@ -102,7 +96,7 @@ enum TaskPriority {
 model Task {
   id          String       @id @default(cuid())
   title       String
-  description String?      @db.Text
+  description String?
   status      TaskStatus   @default(PENDING)
   priority    TaskPriority @default(MEDIUM)
   dueDate     DateTime?
@@ -110,22 +104,18 @@ model Task {
   userId      String
 
   // Relations
-  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tags     Tag[]           @relation("TaskTags")
-  comments TaskComment[]
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tags        Tag[]             @relation("TaskTags")
+  comments    TaskComment[]
   attachments TaskAttachment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@index([status])
-  @@index([createdAt])
 }
 
 model TaskComment {
   id      String @id @default(cuid())
-  content String @db.Text
+  content String
   taskId  String
 
   // Relations
@@ -133,8 +123,6 @@ model TaskComment {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  @@index([taskId])
 }
 
 enum AttachmentType {
@@ -157,6 +145,4 @@ model TaskAttachment {
   task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
-
-  @@index([taskId])
 }
